@@ -1,6 +1,6 @@
-import 'package:asar/features/events/domain/entities/order.dart';
+import 'package:asar/features/events/domain/entities/order_entity.dart';
 
-class OrderModel extends Order {
+class OrderModel extends OrderEntity {
   OrderModel({
     required super.eventId,
     required super.type,
@@ -21,8 +21,8 @@ class OrderModel extends Order {
     return {
       'eventId': eventId,
       'type': type,
-      'quantity': quantity,
-      'price': price,
+      'quantity': quantity as num,
+      'price': price as num,
     };
   }
 

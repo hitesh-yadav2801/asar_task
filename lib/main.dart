@@ -1,11 +1,41 @@
-import 'package:asar/features/events/data/data_sources/event_data_source.dart';
+import 'package:asar/core/common/functions/bloc_observer.dart';
+import 'package:asar/core/routes/app_routes_main.dart';
+import 'package:asar/core/theme/app_theme.dart';
+import 'package:asar/dependency_injection/dependency_injection_imports.dart';
+import 'package:asar/features/auth/presentation/manager/auth_bloc/auth_bloc.dart';
+import 'package:asar/features/auth/presentation/manager/session_cubit/session_cubit.dart';
+import 'package:asar/features/events/presentation/manager/create_order_bloc/create_order_bloc.dart';
+import 'package:asar/features/events/presentation/manager/get_events_bloc/get_events_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  Bloc.observer = MyBlocObserver();
+  await initDependencies();
   await dotenv.load(fileName: ".env");
-  runApp(const MyApp());
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => serviceLocator<AuthBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => serviceLocator<SessionCubit>()..checkCurrentSession(),
+        ),
+        BlocProvider(
+          create: (context) => serviceLocator<GetEventsBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => serviceLocator<CreateOrderBloc>(),
+        )
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -13,23 +43,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+      key: GlobalKey<NavigatorState>(),
       title: 'ASAR',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: Scaffold(
-          body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            final eventDataSource = EventDataSourceImpl();
-            await eventDataSource.getAllEvents();
-            print('Success');
-          },
-          child: const Text('Get Events'),
-        ),
-      )),
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      routerConfig: AppRouter.router,
     );
   }
 }

@@ -7,17 +7,17 @@ class ShimmerHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
-          child: Container(
-            width: 150,
-            height: 24,
-            color: Colors.white,
-          ),
-        ),
-      ),
+      // appBar: AppBar(
+      //   title: Shimmer.fromColors(
+      //     baseColor: Colors.grey[300]!,
+      //     highlightColor: Colors.grey[100]!,
+      //     child: Container(
+      //       width: 150,
+      //       height: 24,
+      //       color: Colors.white,
+      //     ),
+      //   ),
+      // ),
       body: const SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
