@@ -7,10 +7,8 @@ import 'package:asar/core/theme/app_colors.dart';
 import 'package:asar/dependency_injection/dependency_injection_imports.dart';
 import 'package:asar/features/auth/presentation/manager/auth_bloc/auth_bloc.dart';
 import 'package:asar/features/auth/presentation/manager/session_cubit/session_cubit.dart';
-import 'package:asar/features/events/presentation/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
@@ -35,7 +33,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   void initState() {
     super.initState();
     sessionId = (context.read<AuthBloc>().state as OtpGeneratedSuccessState).sessionId;
-    // Start the countdown
+    /// Start the countdown
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_timer.value > 0) {
         _timer.value--;
@@ -54,6 +52,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Page build');
     return MultiBlocListener(
       listeners: [
         BlocListener<AuthBloc, AuthState>(
@@ -178,29 +177,32 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                     ),
                                   )
                                 : InkWell(
-                                    onTap: () {
-                                      _timer.value = 30;
-                                      _countdownTimer.cancel();
-                                      _countdownTimer = Timer.periodic(
-                                        const Duration(seconds: 1),
-                                        (timer) {
-                                          if (_timer.value > 0) {
-                                            _timer.value--;
-                                          } else {
-                                            _countdownTimer.cancel();
-                                          }
-                                        },
-                                      );
-                                    },
-                                    child: const Text(
-                                      'Resend',
-                                      style: TextStyle(
-                                        color: AppColors.primaryColor,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  );
+                              onTap: () {
+                                if (_timer.value == 0) {
+                                  context.read<AuthBloc>().add(SendOtpEvent(phoneNumber: widget.phoneNumber));
+                                  _timer.value = 30;
+                                  _countdownTimer.cancel();
+
+                                  Timer.periodic(const Duration(seconds: 1), (timer) {
+                                    if (_timer.value > 0) {
+                                      _timer.value--;
+                                    } else {
+                                      timer.cancel();
+                                    }
+                                  });
+
+
+                                }
+                              },
+                              child: const Text(
+                                'Resend',
+                                style: TextStyle(
+                                  color: AppColors.primaryColor,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            );
                           },
                         ),
                       ],

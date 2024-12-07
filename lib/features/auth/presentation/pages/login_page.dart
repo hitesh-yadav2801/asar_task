@@ -73,6 +73,7 @@ class _LoginPageState extends State<LoginPage> {
                     return CustomButton(
                       title: 'Get OTP',
                       onTap: () {
+                        if(state is AuthLoadingState) return;
                         if (_formKey.currentState!.validate()) {
                           context.read<AuthBloc>().add(SendOtpEvent(phoneNumber: _phoneController.text.trim()));
                         } else {

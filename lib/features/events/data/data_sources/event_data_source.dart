@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:asar/core/error/exception.dart';
+import 'package:asar/core/network/connection_checker.dart';
 import 'package:asar/features/events/data/models/event_model.dart';
 import 'package:asar/features/events/data/models/order_book_model.dart';
 import 'package:asar/features/events/data/models/order_model.dart';
@@ -16,7 +17,9 @@ abstract interface class EventDataSource {
 }
 
 class EventDataSourceImpl implements EventDataSource {
+
   final String? baseUrl = dotenv.env['BASE_URL'];
+
 
   @override
   Future<List<EventModel>?> getAllEvents() async {

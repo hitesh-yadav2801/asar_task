@@ -3,6 +3,14 @@ part of 'dependency_injection_imports.dart';
 final serviceLocator = GetIt.instance;
 
 Future<void> initDependencies() async {
+  /// Connectivity
+  serviceLocator.registerFactory(() => InternetConnection());
+  serviceLocator.registerFactory<ConnectionChecker>(
+    () => ConnectionCheckerImpl(
+      serviceLocator(),
+    ),
+  );
+
   /// Initialize FlutterSecureStorage
   serviceLocator.registerLazySingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(),
@@ -26,6 +34,7 @@ void _initAuthModule() {
     /// Auth Repository
     ..registerFactory<AuthRepository>(
       () => AuthRepositoryImpl(
+        serviceLocator(),
         serviceLocator(),
       ),
     )
@@ -68,6 +77,7 @@ void _initEventModule() {
     ..registerFactory<EventRepository>(
       () => EventRepositoryImpl(
         eventDataSource: serviceLocator(),
+        connectionChecker: serviceLocator(),
       ),
     )
 
@@ -99,9 +109,7 @@ void _initEventModule() {
         createOrderUseCase: serviceLocator(),
       ),
     )
-    ..registerLazySingleton<OrderBookBloc>(
-      () => OrderBookBloc(
-        getOrderBookUseCase: serviceLocator(),
-      )
-    );
+    ..registerLazySingleton<OrderBookBloc>(() => OrderBookBloc(
+          getOrderBookUseCase: serviceLocator(),
+        ));
 }

@@ -1,5 +1,6 @@
 
 import 'package:asar/core/common/functions/secure_storage_service.dart';
+import 'package:asar/core/network/connection_checker.dart';
 import 'package:asar/features/auth/data/data_sources/auth_data_source.dart';
 import 'package:asar/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:asar/features/auth/domain/repositories/auth_repository.dart';
@@ -18,5 +19,6 @@ import 'package:asar/features/events/presentation/manager/get_events_bloc/get_ev
 import 'package:asar/features/events/presentation/manager/order_book_bloc/order_book_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 part 'dependency_injection.dart';
