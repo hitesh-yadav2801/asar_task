@@ -23,6 +23,10 @@ class _PlaceOrderPageState extends State<PlaceOrderPage> {
   late Timer _timer;
   int _errorCount = 0;
 
+  // Caching the order book
+  final List<Map<double, int>> _cachedYesOrders = [];
+  final List<Map<double, int>> _cachedNoOrders = [];
+
   @override
   void initState() {
     super.initState();
@@ -44,10 +48,12 @@ class _PlaceOrderPageState extends State<PlaceOrderPage> {
 
   void _fetchOrderBook(Timer timer) {
     final currentState = context.read<OrderBookBloc>().state;
+
     /// If the current state is loading or we've had 5 consecutive errors, don't call again
     if (currentState is OrderBookLoading || _errorCount >= 5) {
       return;
     }
+
     /// Trigger the event to fetch the order book again
     context.read<OrderBookBloc>().add(FetchOrderBookEvent(eventId: widget.event.eventId));
   }
@@ -89,14 +95,14 @@ class _PlaceOrderPageState extends State<PlaceOrderPage> {
                   currentNoPrice: widget.event.currentNoPrice.toDouble(),
                   onPlaceOrder: (type, price, quantity) {
                     context.read<CreateOrderBloc>().add(
-                          CreateOrderEventStarted(
-                            eventId: widget.event.eventId,
-                            type: type,
-                            quantity: quantity,
-                            price: price,
-                            authToken: authToken,
-                          ),
-                        );
+                      CreateOrderEventStarted(
+                        eventId: widget.event.eventId,
+                        type: type,
+                        quantity: quantity,
+                        price: price,
+                        authToken: authToken,
+                      ),
+                    );
                   },
                   child: state is OrderPlacingState ? const SpinKitThreeBounce(color: Colors.white, size: 20) : null,
                 );
@@ -115,33 +121,50 @@ class _PlaceOrderPageState extends State<PlaceOrderPage> {
               },
               builder: (context, state) {
                 if (state is OrderBookLoaded) {
+                  /// Cache the order book data
+                  _cachedYesOrders.clear();
+                  _cachedNoOrders.clear();
+
                   /// Aggregate quantities for the same price in yesOrders
                   final Map<double, int> yesOrdersMap = {};
                   for (final order in state.orderBook.yesOrders) {
                     yesOrdersMap.update(
                       order.price.toDouble(),
-                      (existingQuantity) => (existingQuantity + order.quantity).toInt(),
+                          (existingQuantity) => (existingQuantity + order.quantity).toInt(),
                       ifAbsent: () => order.quantity.toInt(),
                     );
                   }
 
                   final yesOrders = yesOrdersMap.entries.map((entry) => {entry.key: entry.value}).toList();
+                  _cachedYesOrders.addAll(yesOrders);
 
                   /// Aggregate quantities for the same price in noOrders
                   final Map<double, int> noOrdersMap = {};
                   for (final order in state.orderBook.noOrders) {
                     noOrdersMap.update(
                       order.price.toDouble(),
-                      (existingQuantity) => (existingQuantity + order.quantity).toInt(),
+                          (existingQuantity) => (existingQuantity + order.quantity).toInt(),
                       ifAbsent: () => order.quantity.toInt(),
                     );
                   }
 
                   final noOrders = noOrdersMap.entries.map((entry) => {entry.key: entry.value}).toList();
+                  _cachedNoOrders.addAll(noOrders);
+                }
 
+                // If the state is loading, show the cached orders
+                if (state is OrderBookLoading || state is OrderBookInitial) {
                   return OrderBookWidget(
-                    yesOrders: yesOrders,
-                    noOrders: noOrders,
+                    yesOrders: _cachedYesOrders,
+                    noOrders: _cachedNoOrders,
+                  );
+                }
+
+                // If state is loaded, show the fresh orders
+                if (state is OrderBookLoaded) {
+                  return OrderBookWidget(
+                    yesOrders: _cachedYesOrders,
+                    noOrders: _cachedNoOrders,
                   );
                 }
 
