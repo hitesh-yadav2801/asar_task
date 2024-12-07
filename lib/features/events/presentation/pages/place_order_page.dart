@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:asar/core/common/widgets/shimmer_home_page.dart';
 import 'package:asar/features/auth/presentation/manager/session_cubit/session_cubit.dart';
 import 'package:asar/features/events/domain/entities/event.dart';
 import 'package:asar/features/events/presentation/manager/create_order_bloc/create_order_bloc.dart';
@@ -48,7 +49,7 @@ class _PlaceOrderPageState extends State<PlaceOrderPage> {
 
   void _fetchOrderBook(Timer timer) {
     final currentState = context.read<OrderBookBloc>().state;
-
+    debugPrint('Error count: $_errorCount');
     /// If the current state is loading or we've had 5 consecutive errors, don't call again
     if (currentState is OrderBookLoading || _errorCount >= 5) {
       return;
@@ -71,7 +72,19 @@ class _PlaceOrderPageState extends State<PlaceOrderPage> {
           children: [
             Row(
               children: [
-                Image.network(widget.event.iconUrl, height: 50, width: 50, fit: BoxFit.cover),
+                Image.network(
+                  widget.event.iconUrl,
+                  height: 50,
+                  width: 50,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const ShimmerCircle(size: 50);
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.error, size: 50, color: Colors.red);
+                  },
+                ),
                 const SizedBox(width: 16.0),
                 Expanded(child: Text(widget.event.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
               ],
@@ -95,14 +108,14 @@ class _PlaceOrderPageState extends State<PlaceOrderPage> {
                   currentNoPrice: widget.event.currentNoPrice.toDouble(),
                   onPlaceOrder: (type, price, quantity) {
                     context.read<CreateOrderBloc>().add(
-                      CreateOrderEventStarted(
-                        eventId: widget.event.eventId,
-                        type: type,
-                        quantity: quantity,
-                        price: price,
-                        authToken: authToken,
-                      ),
-                    );
+                          CreateOrderEventStarted(
+                            eventId: widget.event.eventId,
+                            type: type,
+                            quantity: quantity,
+                            price: price,
+                            authToken: authToken,
+                          ),
+                        );
                   },
                   child: state is OrderPlacingState ? const SpinKitThreeBounce(color: Colors.white, size: 20) : null,
                 );
@@ -115,7 +128,8 @@ class _PlaceOrderPageState extends State<PlaceOrderPage> {
               listener: (context, state) {
                 if (state is OrderBookError) {
                   _errorCount++;
-                } else {
+                } else if(state is OrderBookLoaded) {
+                  debugPrint('Error count reset');
                   _errorCount = 0;
                 }
               },
@@ -130,7 +144,7 @@ class _PlaceOrderPageState extends State<PlaceOrderPage> {
                   for (final order in state.orderBook.yesOrders) {
                     yesOrdersMap.update(
                       order.price.toDouble(),
-                          (existingQuantity) => (existingQuantity + order.quantity).toInt(),
+                      (existingQuantity) => (existingQuantity + order.quantity).toInt(),
                       ifAbsent: () => order.quantity.toInt(),
                     );
                   }
@@ -143,7 +157,7 @@ class _PlaceOrderPageState extends State<PlaceOrderPage> {
                   for (final order in state.orderBook.noOrders) {
                     noOrdersMap.update(
                       order.price.toDouble(),
-                          (existingQuantity) => (existingQuantity + order.quantity).toInt(),
+                      (existingQuantity) => (existingQuantity + order.quantity).toInt(),
                       ifAbsent: () => order.quantity.toInt(),
                     );
                   }
