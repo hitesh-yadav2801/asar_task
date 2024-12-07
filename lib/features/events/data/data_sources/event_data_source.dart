@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:asar/core/error/exception.dart';
 import 'package:asar/features/events/data/models/event_model.dart';
+import 'package:asar/features/events/data/models/order_book_model.dart';
 import 'package:asar/features/events/data/models/order_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -10,6 +11,8 @@ abstract interface class EventDataSource {
   Future<List<EventModel>?> getAllEvents();
 
   Future<OrderModel> createOrder({required OrderModel orderModel, required String authToken});
+
+  Future<OrderBookModel> getOrderBook({required String eventId});
 }
 
 class EventDataSourceImpl implements EventDataSource {
@@ -29,8 +32,12 @@ class EventDataSourceImpl implements EventDataSource {
 
         /// Filter and map each JSON object to an EventModel instance
         final events = jsonData
-            .where((json) => json['eventStatus'] == 'ongoing') /// Filter ongoing events
-            .map((json) => EventModel.fromJson(json)) /// Map to EventModel
+            .where((json) => json['eventStatus'] == 'ongoing')
+
+            /// Filter ongoing events
+            .map((json) => EventModel.fromJson(json))
+
+            /// Map to EventModel
             .toList();
 
         return events.isNotEmpty ? events : null; // Return null if no ongoing events
@@ -40,10 +47,12 @@ class EventDataSourceImpl implements EventDataSource {
       }
     } on ServerException catch (e) {
       debugPrint(e.message);
+
       /// Handle any errors that may occur during the request or parsing process
       throw ServerException(e.message);
     } catch (e) {
       debugPrint(e.toString());
+
       /// Handle any other exceptions that may occur
       throw Exception('Failed to load events: $e');
     }
@@ -62,7 +71,7 @@ class EventDataSourceImpl implements EventDataSource {
         headers: headers,
         body: jsonEncode(orderModel.toJson()),
       );
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         return OrderModel.fromJson(jsonDecode(response.body));
       } else {
         final body = jsonDecode(response.body);
@@ -73,6 +82,27 @@ class EventDataSourceImpl implements EventDataSource {
       throw ServerException(e.message);
     } catch (e) {
       throw Exception('Failed to place order: $e');
+    }
+  }
+
+  @override
+  Future<OrderBookModel> getOrderBook({required String eventId}) async {
+    try {
+      final url = '$baseUrl/avl-orderbook/$eventId';
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        debugPrint(response.body);
+        final orderBook = OrderBookModel.fromJson(jsonDecode(response.body));
+        return orderBook;
+      } else {
+        debugPrint(response.body);
+        throw ServerException('Failed to get order book: ${response.statusCode}');
+      }
+    } on ServerException catch (e) {
+      debugPrint(e.message);
+      throw ServerException(e.message);
+    } catch (e) {
+      throw Exception('Failed to get order book: $e');
     }
   }
 }

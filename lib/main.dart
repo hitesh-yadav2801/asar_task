@@ -6,6 +6,7 @@ import 'package:asar/features/auth/presentation/manager/auth_bloc/auth_bloc.dart
 import 'package:asar/features/auth/presentation/manager/session_cubit/session_cubit.dart';
 import 'package:asar/features/events/presentation/manager/create_order_bloc/create_order_bloc.dart';
 import 'package:asar/features/events/presentation/manager/get_events_bloc/get_events_bloc.dart';
+import 'package:asar/features/events/presentation/manager/order_book_bloc/order_book_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -31,7 +32,10 @@ void main() async {
         ),
         BlocProvider(
           create: (context) => serviceLocator<CreateOrderBloc>(),
-        )
+        ),
+        BlocProvider(
+          create: (context) => serviceLocator<OrderBookBloc>(),
+        ),
       ],
       child: const MyApp(),
     ),

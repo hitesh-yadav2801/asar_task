@@ -12,8 +12,10 @@ import 'package:asar/features/events/data/repositories/event_repository_impl.dar
 import 'package:asar/features/events/domain/repositories/event_repository.dart';
 import 'package:asar/features/events/domain/use_cases/create_order_use_case.dart';
 import 'package:asar/features/events/domain/use_cases/fetch_events_use_case.dart';
+import 'package:asar/features/events/domain/use_cases/get_order_book.dart';
 import 'package:asar/features/events/presentation/manager/create_order_bloc/create_order_bloc.dart';
 import 'package:asar/features/events/presentation/manager/get_events_bloc/get_events_bloc.dart';
+import 'package:asar/features/events/presentation/manager/order_book_bloc/order_book_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 

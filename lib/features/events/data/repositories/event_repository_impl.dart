@@ -3,6 +3,7 @@ import 'package:asar/core/error/failure.dart';
 import 'package:asar/features/events/data/data_sources/event_data_source.dart';
 import 'package:asar/features/events/data/models/order_model.dart';
 import 'package:asar/features/events/domain/entities/event.dart';
+import 'package:asar/features/events/domain/entities/order_book.dart';
 import 'package:asar/features/events/domain/entities/order_entity.dart';
 import 'package:asar/features/events/domain/repositories/event_repository.dart';
 import 'package:fpdart/fpdart.dart';
@@ -43,6 +44,16 @@ class EventRepositoryImpl implements EventRepository {
 
       final placedOrderMode = await eventDataSource.createOrder(orderModel: orderModel, authToken: authToken);
       return right(placedOrderMode as OrderEntity);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, OrderBook>> getOrderBook({required String eventId}) async {
+    try {
+      final orderBook = await eventDataSource.getOrderBook(eventId: eventId);
+      return right(orderBook);
     } on ServerException catch (e) {
       return left(Failure(e.message));
     }

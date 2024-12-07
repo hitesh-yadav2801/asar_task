@@ -82,6 +82,11 @@ void _initEventModule() {
         serviceLocator(),
       ),
     )
+    ..registerFactory<GetOrderBookUseCase>(
+      () => GetOrderBookUseCase(
+        eventRepository: serviceLocator(),
+      ),
+    )
 
     /// Event Bloc
     ..registerFactory<GetEventsBloc>(
@@ -93,5 +98,10 @@ void _initEventModule() {
       () => CreateOrderBloc(
         createOrderUseCase: serviceLocator(),
       ),
+    )
+    ..registerLazySingleton<OrderBookBloc>(
+      () => OrderBookBloc(
+        getOrderBookUseCase: serviceLocator(),
+      )
     );
 }

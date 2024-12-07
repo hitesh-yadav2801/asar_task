@@ -1,8 +1,8 @@
 class OrderEntity {
-  final String eventId;
-  final String type;
-  final int quantity;
-  final double price;
+  final String? eventId;
+  final String? type;
+  final num quantity;
+  final num price;
 
   OrderEntity({
     required this.eventId,

@@ -21,16 +21,16 @@ class OrderModel extends OrderEntity {
     return {
       'eventId': eventId,
       'type': type,
-      'quantity': quantity as num,
-      'price': price as num,
+      'quantity': quantity,
+      'price': price,
     };
   }
 
   OrderModel copyWith({
     String? eventId,
     String? type,
-    int? quantity,
-    double? price,
+    num? quantity,
+    num? price,
   }) {
     return OrderModel(
       eventId: eventId ?? this.eventId,

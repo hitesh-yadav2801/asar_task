@@ -1,5 +1,6 @@
 import 'package:asar/core/error/failure.dart';
 import 'package:asar/features/events/domain/entities/event.dart';
+import 'package:asar/features/events/domain/entities/order_book.dart';
 import 'package:asar/features/events/domain/entities/order_entity.dart';
 import 'package:fpdart/fpdart.dart';
 
@@ -13,4 +14,6 @@ abstract interface class EventRepository {
     required double price,
     required String authToken,
   });
+
+  Future<Either<Failure, OrderBook>> getOrderBook({required String eventId});
 }
